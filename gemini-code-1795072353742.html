@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TeenSupport — Безопасное пространство поддержки</title>
+  <style>
+    :root {
+      --bg-app: #f6f7f5;
+      --bg-surface: #ffffff;
+      --bg-subtle: #eef1ed;
+      --bg-chat-user: #2d5a4c;
+      --bg-chat-bot: #eef2ef;
+      --text-primary: #1c2421;
+      --text-secondary: #5c6b65;
+      --text-muted: #86948e;
+      --accent-primary: #2d5a4c;
+      --accent-primary-hover: #22463b;
+      --accent-soft: #e2ede8;
+      --accent-lavender: #7c6fd6;
+      --accent-lavender-soft: #efedfc;
+      --accent-peach: #e07a5f;
+      --accent-peach-soft: #fdf0ec;
+      --kaspi-red: #f14635;
+      --crisis-bg: #fff3f2;
+      --crisis-border: #f5b7b1;
+      --crisis-text: #8e241b;
+      --border-color: #e2e7e4;
+      --shadow-sm: 0 2px 8px rgba(28, 36, 33, 0.04);
+      --shadow-md: 0 8px 24px rgba(28, 36, 33, 0.07);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    [data-theme="calm-dark"] {
+      --bg-app: #141918;
+      --bg-surface: #1d2422;
+      --bg-subtle: #252e2b;
+      --bg-chat-user: #3b7563;
+      --bg-chat-bot: #26302d;
+      --text-primary: #edf2ef;
+      --text-secondary: #a6b5af;
+      --text-muted: #74847e;
+      --accent-primary: #529c85;
+      --accent-primary-hover: #62b098;
+      --accent-soft: #223831;
+      --accent-lavender: #9b90eb;
+      --accent-lavender-soft: #292542;
+      --accent-peach: #eb8c73;
+      --accent-peach-soft: #3a2621;
+      --crisis-bg: #361d1b;
+      --crisis-border: #78332d;
+      --crisis-text: #ffb4ad;
+      --border-color: #2c3734;
+      --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+      transition: var(--transition);
+    }
+
+    /* Onboarding Overlay */
+    .onboarding-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-app);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: opacity 0.3s ease;
+    }
+
+    .onboarding-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .onboarding-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      max-width: 460px;
+      width: 100%;
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+
+    .badge-anon {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-soft);
+      color: var(--accent-primary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+    }
+
+    .onboarding-card h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+
+    .onboarding-card p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .avatar-picker {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .avatar-option {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-subtle);
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .avatar-option.selected {
+      border-color: var(--accent-primary);
+      background: var(--accent-soft);
+      transform: translateY(-2px);
+    }
+
+    .input-group {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .nick-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type="text"], select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    input[type="text"]:focus, textarea:focus {
+      border-color: var(--accent-primary);
+      background: var(--bg-surface);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 18px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent-primary);
+    }
+
+    .btn-lavender {
+      background: var(--accent-lavender);
+      color: #fff;
+    }
+
+    .btn-lavender:hover {
+      opacity: 0.92;
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    .btn-sm {
+      padding: 7px 12px;
+      font-size: 12px;
+    }
+
+    /* App Layout */
+    .app-shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      gap: 16px;
+    }
+
+    /* Top Header */
+    .topbar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--accent-primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .brand-title {
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: block;
+    }
+
+    .topbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .wallet-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-subtle);
+      padding: 6px 12px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border-color);
+    }
+
+    .plus-badge {
+      background: var(--accent-lavender);
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .lang-switch {
+      display: flex;
+      background: var(--bg-subtle);
+      border-radius: 99px;
+      padding: 3px;
+      border: 1px solid var(--border-color);
+    }
+
+    .lang-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      cursor: pointer;
+    }
+
+    .lang-btn.active {
+      background: var(--bg-surface);
+      color: var(--accent-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    /* Trust Ladder Navigation */
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .nav-tab {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-tab:hover {
+      border-color: var(--accent-primary);
+    }
+
+    .nav-tab.active {
+      background: var(--accent-soft);
+      border-color: var(--accent-primary);
+    }
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .nav-tab.active .step-num {
+      background: var(--accent-primary);
+      color: #fff;
+    }
+
+    .tab-meta strong {
+      display: block;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .tab-meta span {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* Sections */
+    .screen {
+      display: none;
+      flex: 1;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Crisis Banner */
+    .crisis-banner {
+      display: none;
+      background: var(--crisis-bg);
+      border: 1.5px solid var(--crisis-border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 14px;
+      color: var(--crisis-text);
+    }
+
+    .crisis-banner.visible {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .crisis-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .crisis-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .crisis-pill {
+      background: #ffffff;
+      color: #8e241b;
+      border: 1px solid var(--crisis-border);
+      padding: 7px 12px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    /* Chat Screen */
+    .chat-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .chat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      height: 540px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-surface);
+    }
+
+    .curator-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .curator-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--accent-soft);
+      color: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #38b27c;
+      border-radius: 50%;
+      margin-right: 4px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 18px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .msg {
+      max-width: 80%;
+      padding: 12px 15px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.45;
+      position: relative;
+    }
+
+    .msg.bot {
+      background: var(--bg-chat-bot);
+      color: var(--text-primary);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg.user {
+      background: var(--bg-chat-user);
+      color: #ffffff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-time {
+      display: block;
+      font-size: 10px;
+      opacity: 0.7;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .quick-prompts {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      background: var(--bg-subtle);
+    }
+
+    .chip {
+      white-space: nowrap;
+      padding: 6px 12px;
+      border-radius: 99px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .chip:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .chip.crisis-test {
+      border-color: var(--crisis-border);
+      color: var(--accent-peach);
+    }
+
+    .chat-input-bar {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 10px;
+      background: var(--bg-surface);
+    }
+
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card h3 {
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Mood Tracker Screen */
+    .tracker-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+    }
+
+    .mood-options {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .mood-btn {
+      background: var(--bg-subtle);
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .mood-btn span {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .mood-btn small {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .mood-btn.selected {
+      border-color: var(--accent-primary);
+      background: var(--accent-soft);
+      transform: translateY(-2px);
+    }
+
+    .trigger-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 18px;
+    }
+
+    .tag-btn {
+      padding: 6px 12px;
+      border-radius: 99px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .tag-btn.selected {
+      background: var(--accent-lavender-soft);
+      border-color: var(--accent-lavender);
+      color: var(--accent-lavender);
+      font-weight: 600;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .history-item {
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    /* Psychologists Catalog */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .psy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 16px;
+    }
+
+    .psy-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .psy-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .psy-top {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .psy-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: var(--accent-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .psy-verified {
+      font-size: 11px;
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    .psy-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .psy-tag {
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 6px;
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+    }
+
+    .psy-footer {
+      border-top: 1px solid var(--border-color);
+      padding-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Pricing & Parent Sponsor */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .price-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .price-card.featured {
+      border: 2px solid var(--accent-primary);
+      position: relative;
+    }
+
+    .price-value {
+      font-size: 26px;
+      font-weight: 800;
+      margin: 6px 0;
+    }
+
+    .old-price {
+      text-decoration: line-through;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      margin-right: 6px;
+    }
+
+    .sponsor-banner {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent-lavender-soft));
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 20, 18, 0.55);
+      backdrop-filter: blur(4px);
+      z-index: 900;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 22px;
+      max-width: 480px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .link-box {
+      background: var(--bg-subtle);
+      border: 1px dashed var(--accent-primary);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      font-family: monospace;
+      font-size: 12px;
+      word-break: break-all;
+      margin: 12px 0;
+      color: var(--text-primary);
+    }
+
+    .privacy-shield {
+      background: var(--accent-soft);
+      color: var(--accent-primary);
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--text-primary);
+      color: var(--bg-surface);
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 1200;
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 860px) {
+      .nav-tabs {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .chat-layout, .tracker-grid, .pricing-grid {
+        grid-template-columns: 1fr;
+      }
+      .chat-card {
+        height: 460px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. ANONYMOUS ONBOARDING -->
+  <div class="onboarding-overlay" id="onboardingOverlay">
+    <div class="onboarding-card">
+      <div class="badge-anon">🛡️ 100% Анонимно • Без телефона и ФИО</div>
+      <h1>TeenSupport</h1>
+      <p>Безопасное пространство для подростков Казахстана. Выговорись без страха «уят», осуждения и звонков родителям.</p>
+
+      <div class="avatar-picker" id="avatarPicker">
+        <button class="avatar-option selected" data-avatar="🦊">🦊</button>
+        <button class="avatar-option" data-avatar="🌿">🌿</button>
+        <button class="avatar-option" data-avatar="🎧">🎧</button>
+        <button class="avatar-option" data-avatar="☁️">☁️</button>
+        <button class="avatar-option" data-avatar="🪐">🪐</button>
+      </div>
+
+      <div class="input-group">
+        <label for="nicknameInput">Придумай любой никнейм</label>
+        <div class="nick-row">
+          <input type="text" id="nicknameInput" placeholder="Например: NightOwl_KZ" maxlength="20" />
+          <button class="btn btn-secondary" id="genNickBtn" title="Сгенерировать ник">🎲</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="startAppBtn">Войти анонимно →</button>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div class="app-shell">
+    <!-- Top Header -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">TS</div>
+        <div>
+          <span class="brand-title">TeenSupport</span>
+          <span class="brand-sub" data-i18n="tagline">Безопасная поддержка 24/7 • KZ</span>
+        </div>
+      </div>
+
+      <div class="topbar-controls">
+        <div class="wallet-pill">
+          <span id="userBadge">🦊 Аноним</span>
+          <span>•</span>
+          <span id="balanceDisplay">0 ₸</span>
+          <span class="plus-badge" id="plusBadge" style="display:none;">PLUS</span>
+        </div>
+
+        <button class="btn btn-secondary btn-sm" id="openSponsorTopBtn" data-i18n="sponsorBtn">
+          💳 Родительский спонсор
+        </button>
+
+        <div class="lang-switch">
+          <button class="lang-btn active" data-lang="ru">RU</button>
+          <button class="lang-btn" data-lang="kz">KZ</button>
+        </div>
+
+        <button class="icon-btn" id="themeToggleBtn" title="Сменить тему">🌙</button>
+        <button class="icon-btn" id="resetDemoBtn" title="Сбросить демо-данные">↺</button>
+      </div>
+    </header>
+
+    <!-- Trust Ladder Navigation -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="chat">
+        <span class="step-num">1</span>
+        <div class="tab-meta">
+          <strong data-i18n="tab1Title">Анонимный чат</strong>
+          <span data-i18n="tab1Sub">Бесплатно • 24/7</span>
+        </div>
+      </button>
+
+      <button class="nav-tab" data-tab="tracker">
+        <span class="step-num">2</span>
+        <div class="tab-meta">
+          <strong data-i18n="tab2Title">Трекер эмоций</strong>
+          <span data-i18n="tab2Sub">Чек-ин состояния</span>
+        </div>
+      </button>
+
+      <button class="nav-tab" data-tab="psychologists">
+        <span class="step-num">3</span>
+        <div class="tab-meta">
+          <strong data-i18n="tab3Title">Психологи</strong>
+          <span data-i18n="tab3Sub">Проверенные профи</span>
+        </div>
+      </button>
+
+      <button class="nav-tab" data-tab="pricing">
+        <span class="step-num">4</span>
+        <div class="tab-meta">
+          <strong data-i18n="tab4Title">Сессии и Plus</strong>
+          <span data-i18n="tab4Sub">Тарифы и Kaspi</span>
+        </div>
+      </button>
+    </nav>
+
+    <!-- SCREEN 1: ANONYMOUS CHAT & CRISIS PROTOCOL -->
+    <section class="screen active" id="screen-chat">
+      <!-- Crisis Alert Banner -->
+      <div class="crisis-banner" id="crisisBanner">
+        <div class="crisis-header">
+          <div>
+            <strong>🤍 Ты не один(а). Мы рядом и готовы помочь прямо сейчас</strong>
+            <p style="font-size:13px; margin-top:4px; color:inherit;">
+              Похоже, тебе сейчас очень тяжело. В TeenSupport активирован протокол кризисной безопасности — диалог переключён на приоритетную линию дежурного психолога.
+            </p>
+          </div>
+          <button class="btn btn-sm" style="background:rgba(0,0,0,0.08); color:inherit;" id="closeCrisisBtn">✕</button>
+        </div>
+        <div class="crisis-actions">
+          <a href="tel:111" class="crisis-pill">📞 111 — Единый контакт-центр РК (24/7, бесплатно)</a>
+          <a href="tel:150" class="crisis-pill">📞 150 — Национальная линия доверия для молодёжи</a>
+          <button class="crisis-pill" id="connectCrisisPsyBtn">💬 Подключить дежурного кризисного психолога</button>
+        </div>
+      </div>
+
+      <div class="chat-layout">
+        <div class="chat-card">
+          <div class="chat-header">
+            <div class="curator-info">
+              <div class="curator-avatar" id="curatorAvatar">🌿</div>
+              <div>
+                <strong style="font-size:14px;" id="curatorName">Айгерим • Куратор поддержки</strong>
+                <div style="font-size:12px; color:var(--text-secondary);">
+                  <span class="status-dot"></span><span id="curatorStatus">Онлайн • Переписка зашифрована и анонимна</span>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="quickEscapeBtn" title="Быстро скрыть экран">👁️ Скрыть экран</button>
+          </div>
+
+          <div class="chat-messages" id="chatMessages"></div>
+
+          <div class="quick-prompts">
+            <button class="chip" data-prompt="Паника перед ЕНТ, кажется, что я всё завалю">📚 Паника перед ЕНТ</button>
+            <button class="chip" data-prompt="Поссорился с родителями, они совсем не слышат">🏠 Конфликт дома</button>
+            <button class="chip" data-prompt="Накрыла сильная тревога вечером, не могу уснуть">🌧️ Тревога вечером</button>
+            <button class="chip crisis-test" data-prompt="Мне так плохо, что я больше не хочу жить">⚠️ Тест кризис-протокола</button>
+          </div>
+
+          <form class="chat-input-bar" id="chatForm">
+            <input type="text" id="chatInput" placeholder="Напиши всё, что на душе... Никто не узнает твоё имя" autocomplete="off" />
+            <button type="submit" class="btn btn-primary">Отправить</button>
+          </form>
+        </div>
+
+        <aside class="side-panel">
+          <div class="card">
+            <h3>🪜 Как работает Trust Ladder</h3>
+            <p style="margin-bottom:10px;">Тебе не обязательно сразу включать камеру или говорить вслух.</p>
+            <p style="font-size:12px; line-height:1.6;">
+              <strong>Шаг 1:</strong> Выговорись в чате бесплатно.<br/>
+              <strong>Шаг 2:</strong> Отметь эмоции в трекере.<br/>
+              <strong>Шаг 3:</strong> Если захочешь глубже разобраться — выбери психолога на 30 или 50 минут.
+            </p>
+          </div>
+
+          <div class="card" style="background: var(--accent-lavender-soft); border-color: transparent;">
+            <h3>🎧 Аудиопрактика «Стоп-паника»</h3>
+            <p style="margin-bottom:12px;">Дыхание 4-7-8 на русском и казахском языках за 2 минуты.</p>
+            <button class="btn btn-lavender btn-sm btn-full" id="breathingBtn">▶ Запустить дыхание (60 сек)</button>
+            <div id="breathingGuide" style="display:none; margin-top:10px; font-weight:700; font-size:13px; text-align:center; color:var(--accent-lavender);"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: MOOD TRACKER -->
+    <section class="screen" id="screen-tracker">
+      <div class="tracker-grid">
+        <div class="card">
+          <h2 style="font-size:19px; margin-bottom:4px;" data-i18n="trackerHeading">Как ты себя чувствуешь сейчас?</h2>
+          <p>Отметь состояние — это поможет заметить повторяющиеся триггеры и подобрать подходящую поддержку.</p>
+
+          <div class="mood-options" id="moodOptions">
+            <button class="mood-btn" data-mood="Спокойно" data-emoji="😌"><span>😌</span><small>Спокойно</small></button>
+            <button class="mood-btn" data-mood="Нормально" data-emoji="🙂"><span>🙂</span><small>Норм</small></button>
+            <button class="mood-btn" data-mood="Усталость" data-emoji="😮‍💨"><span>😮‍💨</span><small>Усталость</small></button>
+            <button class="mood-btn" data-mood="Тревога" data-emoji="😰"><span>😰</span><small>Тревога</small></button>
+            <button class="mood-btn" data-mood="Тяжело" data-emoji="🌧️"><span>🌧️</span><small>Тяжело</small></button>
+          </div>
+
+          <label style="font-size:13px; font-weight:600; color:var(--text-secondary);">Что повлияло на состояние?</label>
+          <div class="trigger-tags" id="triggerTags">
+            <button class="tag-btn" data-tag="Подготовка к ЕНТ">Подготовка к ЕНТ</button>
+            <button class="tag-btn" data-tag="Родители / семья">Родители / семья</button>
+            <button class="tag-btn" data-tag="Школа / буллинг">Школа / буллинг</button>
+            <button class="tag-btn" data-tag="Отношения">Отношения</button>
+            <button class="tag-btn" data-tag="Одиночество">Одиночество</button>
+            <button class="tag-btn" data-tag="Недосып">Недосып</button>
+          </div>
+
+          <div class="input-group">
+            <label for="moodNote">Короткая заметка для себя (видишь только ты)</label>
+            <input type="text" id="moodNote" placeholder="Например: после пробного теста по математике стало тревожно..." />
+          </div>
+
+          <button class="btn btn-primary" id="saveMoodBtn">Сохранить запись в дневник</button>
+        </div>
+
+        <div class="card">
+          <h3>📊 Твой дневник эмоций</h3>
+          <p id="moodInsight">Сделай первую отметку, чтобы увидеть динамику состояния.</p>
+          <div class="history-list" id="moodHistoryList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: PSYCHOLOGISTS CATALOG -->
+    <section class="screen" id="screen-psychologists">
+      <div class="filter-bar">
+        <div>
+          <h2 style="font-size:19px;" data-i18n="psyHeading">Подростковые психологи</h2>
+          <p style="font-size:13px; color:var(--text-secondary);">Дипломированные специалисты с опытом работы с молодёжью от 2 лет • RU / KZ</p>
+        </div>
+        <div class="filter-pills" id="psyFilters">
+          <button class="chip active" data-filter="all">Все специалисты</button>
+          <button class="chip" data-filter="ЕНТ">Стресс и ЕНТ</button>
+          <button class="chip" data-filter="Тревога">Тревога и паника</button>
+          <button class="chip" data-filter="Семья">Конфликты с родителями</button>
+          <button class="chip" data-filter="KZ">Қазақша сөйлейді</button>
+        </div>
+      </div>
+
+      <div class="psy-grid" id="psyGrid"></div>
+    </section>
+
+    <!-- SCREEN 4: PRICING, PLUS & PARENT SPONSOR -->
+    <section class="screen" id="screen-pricing">
+      <div class="pricing-grid" id="pricingGrid">
+        <!-- Express -->
+        <div class="price-card">
+          <div>
+            <span class="badge-anon">Карманный формат</span>
+            <h3>Экспресс-разбор</h3>
+            <p style="font-size:13px; color:var(--text-secondary);">30 минут • Аудио или защищённый чат</p>
+            <div class="price-value" data-base-price="6000">6 000 ₸</div>
+            <p style="font-size:13px; color:var(--text-secondary);">Чтобы быстро разобрать конкретную ситуацию: ссору, панику перед экзаменом или сложный выбор.</p>
+          </div>
+          <button class="btn btn-secondary btn-full book-plan-btn" data-plan="Экспресс-разбор (30 мин)" data-price="6000">Выбрать формат</button>
+        </div>
+
+        <!-- Full Session -->
+        <div class="price-card featured">
+          <div>
+            <span class="badge-anon" style="background:var(--accent-primary); color:#fff;">Самый популярный</span>
+            <h3>Полноценная сессия</h3>
+            <p style="font-size:13px; color:var(--text-secondary);">50 минут • Видео или аудио с психологом</p>
+            <div class="price-value" data-base-price="12000">12 000 ₸</div>
+            <p style="font-size:13px; color:var(--text-secondary);">Глубокая бережная работа со специалистом, разбор причин тревоги и план поддержки.</p>
+          </div>
+          <button class="btn btn-primary btn-full book-plan-btn" data-plan="Полноценная сессия (50 мин)" data-price="12000">Записаться на сессию</button>
+        </div>
+
+        <!-- Package -->
+        <div class="price-card">
+          <div>
+            <span class="badge-anon" style="background:var(--accent-peach-soft); color:var(--accent-peach);">Выгода 12,5%</span>
+            <h3>Пакет «Спокойный месяц»</h3>
+            <p style="font-size:13px; color:var(--text-secondary);">4 сессии по 50 минут</p>
+            <div class="price-value" data-base-price="42000">42 000 ₸</div>
+            <p style="font-size:13px; color:var(--text-secondary);">Стабильная поддержка раз в неделю. Идеально для периода подготовки к ЕНТ или адаптации.</p>
+          </div>
+          <button class="btn btn-secondary btn-full book-plan-btn" data-plan="Пакет «Спокойный месяц» (4 сессии)" data-price="42000">Выбрать пакет</button>
+        </div>
+      </div>
+
+      <!-- Subscription Plus -->
+      <div class="card" style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div>
+          <span class="plus-badge" style="margin-bottom:6px; display:inline-block;">Подписка TeenSupport Plus</span>
+          <h3>Безлимитный приоритетный чат + аналитика триггеров + скидка 10% на все сессии</h3>
+          <p>Включает библиотеку аудиопрактик от панических атак и мгновенный ответ куратора без очереди — всего <strong>1 990 ₸ / мес</strong>.</p>
+        </div>
+        <button class="btn btn-lavender" id="activatePlusBtn">Подключить Plus за 1 990 ₸</button>
+      </div>
+
+      <!-- Parent Sponsor Feature -->
+      <div class="sponsor-banner">
+        <div style="max-width:620px;">
+          <h3 style="font-size:17px; margin-bottom:6px;">🤝 Функция «Родительский спонсор» (оплата через Kaspi)</h3>
+          <p style="font-size:13px; color:var(--text-secondary);">
+            Если у тебя нет своей карты: отправь маме или папе безопасную ссылку для пополнения баланса.
+            <strong>Врачебная тайна соблюдается на 100%</strong> — родители увидят только счёт на сессии с сертифицированным психологом, но никогда не увидят твою переписку и тему запроса.
+          </p>
+        </div>
+        <button class="btn btn-primary" id="openSponsorMainBtn">Создать ссылку для родителя</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL: PARENT SPONSOR -->
+  <div class="modal-backdrop" id="sponsorModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>💳 Родительский спонсор</h3>
+        <button class="icon-btn" id="closeSponsorModal">✕</button>
+      </div>
+
+      <div class="privacy-shield">
+        🔒 <strong>Гарантия конфиденциальности:</strong> по этой ссылке родитель видит только номинал пополнения и статус верификации психологов. Чат, дневник и причины обращения скрыты.
+      </div>
+
+      <div class="input-group">
+        <label for="sponsorAmountSelect">Сумма пополнения баланса (₸)</label>
+        <select id="sponsorAmountSelect">
+          <option value="6000">6 000 ₸ — На 1 экспресс-разбор (30 мин)</option>
+          <option value="12000" selected>12 000 ₸ — На 1 полноценную сессию (50 мин)</option>
+          <option value="42000">42 000 ₸ — Пакет «Спокойный месяц» (4 сессии)</option>
+        </select>
+      </div>
+
+      <div class="link-box" id="sponsorLinkBox">https://teensupport.kz/pay/kaspi-invite/ts-8942-safe</div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-secondary" style="flex:1;" id="copySponsorLinkBtn">📋 Скопировать ссылку</button>
+        <button class="btn btn-primary" style="flex:1;" id="simulateParentPayBtn">▶ Симулировать оплату Kaspi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: BOOKING -->
+  <div class="modal-backdrop" id="bookingModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>📅 Запись на консультацию</h3>
+        <button class="icon-btn" id="closeBookingModal">✕</button>
+      </div>
+      <div id="bookingDetails" style="font-size:14px; margin-bottom:14px;"></div>
+
+      <div class="input-group">
+        <label for="bookingFormat">Формат встречи</label>
+        <select id="bookingFormat">
+          <option value="Чат / Аудио (без камеры)">Аудио или чат (без камеры — максимально комфортно)</option>
+          <option value="Видеосессия в защищённом окне">Видеосессия внутри платформы</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="bookingSlot">Ближайшее свободное время</label>
+        <select id="bookingSlot">
+          <option value="Сегодня, 19:00">Сегодня, 19:00</option>
+          <option value="Сегодня, 20:30">Сегодня, 20:30</option>
+          <option value="Завтра, 16:00">Завтра, 16:00</option>
+        </select>
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary" style="flex:1;" id="bookingSponsorFallbackBtn">Попросить оплатить родителя</button>
+        <button class="btn btn-primary" style="flex:1;" id="confirmBookingBtn">Оплатить с баланса</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // --- STATE & STORAGE ---
+    const DEFAULT_STATE = {
+      onboarded: false,
+      nickname: 'NightOwl_KZ',
+      avatar: '🦊',
+      lang: 'ru',
+      theme: 'light',
+      balance: 0,
+      hasPlus: false,
+      crisisActive: false,
+      messages: [
+        {
+          sender: 'bot',
+          text: 'Сәлем! Я Айгерим, куратор поддержки TeenSupport. Здесь тебя никто не осудит и не передаст разговор в школу или родителям. О чём хочется выговориться прямо сейчас?',
+          time: 'Сейчас'
+        }
+      ],
+      moods: [
+        { mood: 'Тревога', emoji: '😰', tags: ['Подготовка к ЕНТ'], note: 'Переживаю из-за баллов на пробном тесте', date: 'Вчера, 21:40' }
+      ],
+      bookings: []
+    };
+
+    let state = loadState();
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('teensupport_mvp_state');
+        return saved ? { ...DEFAULT_STATE, ...JSON.parse(saved) } : { ...DEFAULT_STATE };
+      } catch (e) {
+        return { ...DEFAULT_STATE };
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem('teensupport_mvp_state', JSON.stringify(state));
+      renderHeader();
+      renderPricing();
+    }
+
+    // --- DICTIONARY (RU / KZ) ---
+    const I18N = {
+      ru: {
+        tagline: 'Безопасная поддержка 24/7 • KZ',
+        sponsorBtn: '💳 Родительский спонсор',
+        tab1Title: 'Анонимный чат',
+        tab1Sub: 'Бесплатно • 24/7',
+        tab2Title: 'Трекер эмоций',
+        tab2Sub: 'Чек-ин состояния',
+        tab3Title: 'Психологи',
+        tab3Sub: 'Проверенные профи',
+        tab4Title: 'Сессии и Plus',
+        tab4Sub: 'Тарифы и Kaspi',
+        trackerHeading: 'Как ты себя чувствуешь сейчас?',
+        psyHeading: 'Подростковые психологи'
+      },
+      kz: {
+        tagline: 'Қауіпсіз қолдау 24/7 • KZ',
+        sponsorBtn: '💳 Ата-ана демеушілігі',
+        tab1Title: 'Анонимді чат',
+        tab1Sub: 'Тегін • 24/7',
+        tab2Title: 'Эмоция трекері',
+        tab2Sub: 'Көңіл-күй күнделігі',
+        tab3Title: 'Психологтар',
+        tab3Sub: 'Тексерілген мамандар',
+        tab4Title: 'Сессиялар және Plus',
+        tab4Sub: 'Тарифтер мен Kaspi',
+        trackerHeading: 'Дәл қазір өзіңді қалай сезінесің?',
+        psyHeading: 'Жасөспірімдер психологтары'
+      }
+    };
+
+    // --- PSYCHOLOGISTS DATA ---
+    const PSYCHOLOGISTS = [
+      {
+        id: 1,
+        name: 'Данара Серикбаева',
+        role: 'Подростковый КПТ-психолог • 5 лет опыта',
+        avatar: '👩🏻‍💼',
+        langs: ['RU', 'KZ'],
+        tags: ['ЕНТ', 'Тревога', 'KZ'],
+        about: 'Помогаю справиться со страхом перед ЕНТ, паническими атаками и перфекционизмом без давления.',
+        price30: 6000,
+        price50: 12000
+      },
+      {
+        id: 2,
+        name: 'Тимур Аскаров',
+        role: 'Гештальт-терапевт • 4 года опыта',
+        avatar: '🧔🏻‍♂️',
+        langs: ['RU'],
+        tags: ['Семья', 'Тревога'],
+        about: 'Работаю с конфликтами с родителями, буллингом в школе и поиском себя. Говорим на одном языке.',
+        price30: 6000,
+        price50: 12000
+      },
+      {
+        id: 3,
+        name: 'Аружан Кенжебек',
+        role: 'Кризисный и семейный психолог • 6 лет опыта',
+        avatar: '🧕🏻',
+        langs: ['KZ', 'RU'],
+        tags: ['Семья', 'ЕНТ', 'KZ'],
+        about: 'Бережно поддерживаю при эмоциональном выгорании, чувстве стыда («уят») и недопонимании в семье.',
+        price30: 6000,
+        price50: 12000
+      }
+    ];
+
+    // --- HELPERS ---
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3200);
+    }
+
+    function formatPrice(amount) {
+      const finalAmount = state.hasPlus ? Math.round(amount * 0.9) : amount;
+      return finalAmount.toLocaleString('ru-RU') + ' ₸';
+    }
+
+    function applyLanguage() {
+      const dict = I18N[state.lang] || I18N.ru;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === state.lang);
+      });
+    }
+
+    function applyTheme() {
+      document.documentElement.setAttribute('data-theme', state.theme);
+      document.getElementById('themeToggleBtn').textContent = state.theme === 'calm-dark' ? '☀️' : '🌙';
+    }
+
+    function renderHeader() {
+      document.getElementById('userBadge').textContent = `${state.avatar} ${state.nickname}`;
+      document.getElementById('balanceDisplay').textContent = `${state.balance.toLocaleString('ru-RU')} ₸`;
+      document.getElementById('plusBadge').style.display = state.hasPlus ? 'inline-block' : 'none';
+      const plusBtn = document.getElementById('activatePlusBtn');
+      if (state.hasPlus) {
+        plusBtn.textContent = '✓ Подписка Plus активна (-10%)';
+        plusBtn.disabled = true;
+      } else {
+        plusBtn.textContent = 'Подключить Plus за 1 990 ₸';
+        plusBtn.disabled = false;
+      }
+    }
+
+    // --- ONBOARDING ---
+    const nickSamples = ['SteppeFox_17', 'AlmatyCloud', 'QuietStar_KZ', 'NomadWave', 'MellowSoul'];
+    document.querySelectorAll('.avatar-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        state.avatar = btn.dataset.avatar;
+      });
+    });
+
+    document.getElementById('genNickBtn').addEventListener('click', () => {
+      const randomNick = nickSamples[Math.floor(Math.random() * nickSamples.length)];
+      document.getElementById('nicknameInput').value = randomNick;
+    });
+
+    document.getElementById('startAppBtn').addEventListener('click', () => {
+      const val = document.getElementById('nicknameInput').value.trim();
+      state.nickname = val || nickSamples[Math.floor(Math.random() * nickSamples.length)];
+      state.onboarded = true;
+      saveState();
+      document.getElementById('onboardingOverlay').classList.add('hidden');
+      showToast(`Добро пожаловать, ${state.nickname}! Твоя сессия анонимна.`);
+    });
+
+    if (state.onboarded) {
+      document.getElementById('onboardingOverlay').classList.add('hidden');
+    }
+
+    // --- NAVIGATION ---
+    function switchTab(tabName) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(`screen-${tabName}`).classList.add('active');
+    }
+
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+
+    // --- CHAT & CRISIS PROTOCOL ---
+    const CRISIS_KEYWORDS = ['суицид', 'не хочу жить', 'покончить', 'убить себя', 'конец', 'порезать', 'умереть'];
+
+    function checkCrisisTrigger(text) {
+      const lower = text.toLowerCase();
+      return CRISIS_KEYWORDS.some(word => lower.includes(word));
+    }
+
+    function activateCrisisProtocol() {
+      state.crisisActive = true;
+      document.getElementById('crisisBanner').classList.add('visible');
+      document.getElementById('curatorName').textContent = 'Марат • Дежурный кризисный психолог';
+      document.getElementById('curatorAvatar').textContent = '🛡️';
+      document.getElementById('curatorStatus').textContent = 'Приоритетная линия безопасности активна';
+      saveState();
+    }
+
+    function renderMessages() {
+      const container = document.getElementById('chatMessages');
+      container.innerHTML = '';
+      state.messages.forEach(m => {
+        const div = document.createElement('div');
+        div.className = `msg ${m.sender}`;
+        div.innerHTML = `${m.text}<span class="msg-time">${m.time}</span>`;
+        container.appendChild(div);
+      });
+      container.scrollTop = container.scrollHeight;
+      if (state.crisisActive) {
+        document.getElementById('crisisBanner').classList.add('visible');
+      }
+    }
+
+    function generateBotReply(userText) {
+      const lower = userText.toLowerCase();
+      if (checkCrisisTrigger(lower)) {
+        activateCrisisProtocol();
+        return 'Я вижу, как тебе сейчас больно и тяжело. Пожалуйста, оставайся на связи — ты не один(а). Я уже переключил диалог на дежурного кризисного специалиста, а выше появились бесплатные номера 111 и 150. Хочешь, просто побудем на связи прямо здесь?';
+      }
+      if (lower.includes('ент') || lower.includes('экзамен') || lower.includes('тест')) {
+        return 'Давление перед ЕНТ выматывает — кажется, что от одного теста зависит вся жизнь, но это не так. Давай выдохнем: что пугает больше всего прямо сейчас — страх не набрать баллы или реакция родителей?';
+      }
+      if (lower.includes('родител') || lower.includes('мама') || lower.includes('папа') || lower.includes('дома')) {
+        return 'Когда дома не слышат и сравнивают с другими, внутри накапливается много обиды и бессилия. Твои чувства абсолютно нормальны. Расскажи подробнее, что произошло?';
+      }
+      if (lower.includes('тревог') || lower.includes('паник') || lower.includes('усну')) {
+        return 'Когда тревога накрывает вечером, мозг начинает прокручивать худшие сценарии. Попробуй прямо сейчас сделать медленный вдох на 4 счёта и выдох на 6. Хочешь, включим аудиопрактику справа или обсудим, что запустило это чувство?';
+      }
+      return 'Спасибо, что делишься этим. Я внимательно читаю и рядом с тобой. Если захочешь — можем разобрать это подробнее здесь или подобрать бережного психолога без камеры.';
+    }
+
+    function sendMessage(text) {
+      if (!text.trim()) return;
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      state.messages.push({ sender: 'user', text: text.trim(), time: now });
+      renderMessages();
+      saveState();
+
+      setTimeout(() => {
+        const reply = generateBotReply(text);
+        const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        state.messages.push({ sender: 'bot', text: reply, time: replyTime });
+        renderMessages();
+        saveState();
+      }, 550);
+    }
+
+    document.getElementById('chatForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const input = document.getElementById('chatInput');
+      sendMessage(input.value);
+      input.value = '';
+    });
+
+    document.querySelectorAll('.quick-prompts .chip').forEach(chip => {
+      chip.addEventListener('click', () => sendMessage(chip.dataset.prompt));
+    });
+
+    document.getElementById('closeCrisisBtn').addEventListener('click', () => {
+      document.getElementById('crisisBanner').classList.remove('visible');
+    });
+
+    document.getElementById('connectCrisisPsyBtn').addEventListener('click', () => {
+      sendMessage('Мне нужна поддержка дежурного кризисного психолога прямо сейчас');
+    });
+
+    document.getElementById('quickEscapeBtn').addEventListener('click', () => {
+      document.title = 'Подготовка к ЕНТ — Конспекты по истории РК';
+      showToast('Заголовок вкладки замаскирован под учебный портал');
+    });
+
+    // Breathing Exercise
+    let breathingTimer = null;
+    document.getElementById('breathingBtn').addEventListener('click', () => {
+      const guide = document.getElementById('breathingGuide');
+      if (breathingTimer) {
+        clearInterval(breathingTimer);
+        breathingTimer = null;
+        guide.style.display = 'none';
+        return;
+      }
+      guide.style.display = 'block';
+      const phases = ['Вдох носом (4 сек)... 🌿', 'Задержи дыхание (4 сек)... ✨', 'Медленный выдох (6 сек)... 🍃'];
+      let idx = 0;
+      guide.textContent = phases[0];
+      breathingTimer = setInterval(() => {
+        idx = (idx + 1) % phases.length;
+        guide.textContent = phases[idx];
+      }, 4000);
+    });
+
+    // --- MOOD TRACKER ---
+    let selectedMood = null;
+    let selectedTags = [];
+
+    document.querySelectorAll('.mood-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedMood = { mood: btn.dataset.mood, emoji: btn.dataset.emoji };
+      });
+    });
+
+    document.querySelectorAll('.tag-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tag = btn.dataset.tag;
+        btn.classList.toggle('selected');
+        if (selectedTags.includes(tag)) {
+          selectedTags = selectedTags.filter(t => t !== tag);
+        } else {
+          selectedTags.push(tag);
+        }
+      });
+    });
+
+    function renderMoods() {
+      const list = document.getElementById('moodHistoryList');
+      list.innerHTML = '';
+      state.moods.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `
+          <div>
+            <strong>${item.emoji} ${item.mood}</strong>
+            <div style="font-size:12px; color:var(--text-secondary);">${item.tags.join(', ') || 'Без тегов'} ${item.note ? '• ' + item.note : ''}</div>
+          </div>
+          <span style="font-size:11px; color:var(--text-muted); white-space:nowrap;">${item.date}</span>
+        `;
+        list.appendChild(div);
+      });
+
+      if (state.moods.length > 0) {
+        document.getElementById('moodInsight').textContent =
+          `Записей в дневнике: ${state.moods.length}. Частый триггер: ${state.moods[0].tags[0] || 'не указан'}.`;
+      }
+    }
+
+    document.getElementById('saveMoodBtn').addEventListener('click', () => {
+      if (!selectedMood) {
+        showToast('Выбери смайлик настроения выше');
+        return;
+      }
+      const note = document.getElementById('moodNote').value.trim();
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      state.moods.unshift({
+        mood: selectedMood.mood,
+        emoji: selectedMood.emoji,
+        tags: [...selectedTags],
+        note,
+        date: `Сегодня, ${now}`
+      });
+      document.getElementById('moodNote').value = '';
+      selectedTags = [];
+      document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
+      saveState();
+      renderMoods();
+      showToast('Запись сохранена в твой анонимный дневник');
+    });
+
+    // --- PSYCHOLOGISTS CATALOG ---
+    function renderPsychologists(filter = 'all') {
+      const grid = document.getElementById('psyGrid');
+      grid.innerHTML = '';
+      const filtered = filter === 'all'
+        ? PSYCHOLOGISTS
+        : PSYCHOLOGISTS.filter(p => p.tags.includes(filter));
+
+      filtered.forEach(psy => {
+        const card = document.createElement('div');
+        card.className = 'psy-card';
+        card.innerHTML = `
+          <div>
+            <div class="psy-top">
+              <div class="psy-avatar">${psy.avatar}</div>
+              <div>
+                <div class="psy-verified">✓ Диплом проверен • ${psy.langs.join(' / ')}</div>
+                <strong style="font-size:16px;">${psy.name}</strong>
+                <div style="font-size:12px; color:var(--text-secondary);">${psy.role}</div>
+              </div>
+            </div>
+            <p style="font-size:13px; color:var(--text-secondary); margin:12px 0;">${psy.about}</p>
+            <div class="psy-tags">
+              ${psy.tags.map(t => `<span class="psy-tag">#${t}</span>`).join('')}
+            </div>
+          </div>
+          <div class="psy-footer">
+            <div>
+              <span style="font-size:11px; color:var(--text-muted); display:block;">Сессия 50 мин</span>
+              <strong>${formatPrice(psy.price50)}</strong>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openBookingModal('${psy.name} — Сессия 50 мин', ${psy.price50})">
+              Записаться
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    document.querySelectorAll('#psyFilters .chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('#psyFilters .chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        renderPsychologists(chip.dataset.filter);
+      });
+    });
+
+    // --- PRICING, BOOKING & PARENT SPONSOR ---
+    function renderPricing() {
+      document.querySelectorAll('.price-value[data-base-price]').forEach(el => {
+        const base = Number(el.dataset.basePrice);
+        if (state.hasPlus) {
+          const discounted = Math.round(base * 0.9);
+          el.innerHTML = `<span class="old-price">${base.toLocaleString('ru-RU')} ₸</span>${discounted.toLocaleString('ru-RU')} ₸`;
+        } else {
+          el.textContent = `${base.toLocaleString('ru-RU')} ₸`;
+        }
+      });
+      renderPsychologists(document.querySelector('#psyFilters .chip.active')?.dataset.filter || 'all');
+    }
+
+    document.getElementById('activatePlusBtn').addEventListener('click', () => {
+      if (state.hasPlus) return;
+      if (state.balance >= 1990) {
+        state.balance -= 1990;
+        state.hasPlus = true;
+        saveState();
+        showToast('Подписка TeenSupport Plus активирована! Скидка 10% применена.');
+      } else {
+        showToast('Недостаточно средств на балансе. Пополни через «Родительского спонсора»!');
+        openSponsorModal(6000);
+      }
+    });
+
+    let currentBooking = { title: '', basePrice: 0 };
+
+    window.openBookingModal = function(title, basePrice) {
+      currentBooking = { title, basePrice };
+      const finalPrice = state.hasPlus ? Math.round(basePrice * 0.9) : basePrice;
+      document.getElementById('bookingDetails').innerHTML = `
+        <strong>Услуга:</strong> ${title}<br/>
+        <strong>Стоимость:</strong> ${finalPrice.toLocaleString('ru-RU')} ₸ ${state.hasPlus ? '(со скидкой Plus 10%)' : ''}<br/>
+        <strong>Твой баланс:</strong> ${state.balance.toLocaleString('ru-RU')} ₸
+      `;
+      document.getElementById('bookingModal').classList.add('open');
+    };
+
+    document.querySelectorAll('.book-plan-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        openBookingModal(btn.dataset.plan, Number(btn.dataset.price));
+      });
+    });
+
+    document.getElementById('closeBookingModal').addEventListener('click', () => {
+      document.getElementById('bookingModal').classList.remove('open');
+    });
+
+    document.getElementById('bookingSponsorFallbackBtn').addEventListener('click', () => {
+      document.getElementById('bookingModal').classList.remove('open');
+      openSponsorModal(currentBooking.basePrice);
+    });
+
+    document.getElementById('confirmBookingBtn').addEventListener('click', () => {
+      const finalPrice = state.hasPlus ? Math.round(currentBooking.basePrice * 0.9) : currentBooking.basePrice;
+      if (state.balance < finalPrice) {
+        showToast('На балансе не хватает средств. Используй ссылку для родителя!');
+        return;
+      }
+      state.balance -= finalPrice;
+      const slot = document.getElementById('bookingSlot').value;
+      const format = document.getElementById('bookingFormat').value;
+      state.bookings.push({ title: currentBooking.title, slot, format });
+      saveState();
+      document.getElementById('bookingModal').classList.remove('open');
+      showToast(`Запись подтверждена на ${slot}! Ссылка придёт в анонимный чат.`);
+    });
+
+    // Sponsor Modal Logic
+    function openSponsorModal(presetAmount) {
+      const select = document.getElementById('sponsorAmountSelect');
+      if (presetAmount && [6000, 12000, 42000].includes(presetAmount)) {
+        select.value = String(presetAmount);
+      }
+      updateSponsorLink();
+      document.getElementById('sponsorModal').classList.add('open');
+    }
+
+    function updateSponsorLink() {
+      const amount = document.getElementById('sponsorAmountSelect').value;
+      const code = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('sponsorLinkBox').textContent =
+        `https://teensupport.kz/kaspi-sponsor/${state.nickname.toLowerCase()}-${amount}kzt-${code}`;
+    }
+
+    document.getElementById('sponsorAmountSelect').addEventListener('change', updateSponsorLink);
+    document.getElementById('openSponsorTopBtn').addEventListener('click', () => openSponsorModal());
+    document.getElementById('openSponsorMainBtn').addEventListener('click', () => openSponsorModal());
+    document.getElementById('closeSponsorModal').addEventListener('click', () => {
+      document.getElementById('sponsorModal').classList.remove('open');
+    });
+
+    document.getElementById('copySponsorLinkBtn').addEventListener('click', () => {
+      const link = document.getElementById('sponsorLinkBox').textContent;
+      navigator.clipboard?.writeText(link);
+      showToast('Ссылка скопирована! Отправь её в WhatsApp или Telegram родителю.');
+    });
+
+    document.getElementById('simulateParentPayBtn').addEventListener('click', () => {
+      const amount = Number(document.getElementById('sponsorAmountSelect').value);
+      state.balance += amount;
+      saveState();
+      document.getElementById('sponsorModal').classList.remove('open');
+      showToast(`✅ Родитель пополнил твой баланс на ${amount.toLocaleString('ru-RU')} ₸ через Kaspi!`);
+    });
+
+    // --- GLOBAL CONTROLS (LANG, THEME, RESET) ---
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.lang = btn.dataset.lang;
+        saveState();
+        applyLanguage();
+      });
+    });
+
+    document.getElementById('themeToggleBtn').addEventListener('click', () => {
+      state.theme = state.theme === 'calm-dark' ? 'light' : 'calm-dark';
+      saveState();
+      applyTheme();
+    });
+
+    document.getElementById('resetDemoBtn').addEventListener('click', () => {
+      localStorage.removeItem('teensupport_mvp_state');
+      location.reload();
+    });
+
+    // Init
+    applyTheme();
+    applyLanguage();
+    renderHeader();
+    renderMessages();
+    renderMoods();
+    renderPricing();
+  </script>
+</body>
+</html>
